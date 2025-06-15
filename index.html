@@ -1,52 +1,560 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>NFC录音播放</title>
-    <script>
-        // 核心代码：加载后自动播放音频
-        window.onload = function() {
-            const audio = new Audio("https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/video_20250124_185056.mp4");
-            // 安卓自动播放
-            audio.play().catch(e => {
-                // iOS需要点击：显示引导层
-                document.getElementById("ios-tips").style.display = "block";
-            });
-
-            // 全屏点击处理（兼容iOS）
-            document.body.onclick = () => {
-                audio.play();
-                document.getElementById("ios-tips").style.display = "none";
-            };
-        };
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>青春毕业季祝福</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
+        * {
             margin: 0;
-            background: #000;
-            height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            z-index: 10;
+        }
+        
+        .player-card {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 28px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            box-shadow: 
+                0 20px 40px rgba(144, 195, 238, 0.3),
+                0 10px 20px rgba(255, 193, 209, 0.25);
+            backdrop-filter: blur(6px);
             overflow: hidden;
         }
-        #ios-tips {
-            display: none; /* 默认隐藏 */
-            position: fixed;
-            top: 0;
-            left: 0;
+        
+        .player-card::before {
+            content: '';
+            position: absolute;
+            top: -150px;
+            left: -150px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(
+                circle, 
+                rgba(144, 195, 238, 0.3) 0%, 
+                transparent 70%
+            );
+            z-index: -1;
+            border-radius: 50%;
+        }
+        
+        .player-card::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            right: -100px;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(
+                circle, 
+                rgba(255, 193, 209, 0.3) 0%, 
+                transparent 70%
+            );
+            z-index: -1;
+            border-radius: 50%;
+        }
+        
+        h1 {
+            color: #5a7ebd;
+            margin: 0 0 35px;
+            font-weight: 700;
+            font-size: 32px;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 中央校徽按钮 */
+        .center-logo {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 35px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .center-logo::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            width: calc(100% + 16px);
+            height: calc(100% + 16px);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .center-logo:hover::before {
+            opacity: 0.6;
+        }
+        
+        .center-logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .center-logo:active {
+            transform: scale(0.98);
+        }
+        
+        .center-logo img {
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
-            color: white;
-            font-family: sans-serif;
-            text-align: center;
-            padding-top: 40%;
+            object-fit: contain;
+            transition: transform 0.5s ease;
+        }
+        
+        .center-logo:hover img {
+            transform: rotate(5deg);
+        }
+        
+        /* 状态指示 */
+        .status {
+            font-size: 22px;
+            color: #5a7ebd;
+            padding: 20px;
+            background: rgba(232, 244, 255, 0.8);
+            border-radius: 20px;
+            margin: 20px 0 30px;
+            position: relative;
+            backdrop-filter: blur(4px);
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.05),
+                0 4px 15px rgba(90, 126, 189, 0.15);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .status.playing {
+            color: #ff5e94;
+            background: rgba(255, 233, 239, 0.8);
+            animation: pulse 2s infinite;
+        }
+        
+        /* 祝福语卡片 */
+        .message {
+            font-size: 20px;
+            color: #4a658a;
+            font-weight: 500;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            min-height: 40px;
+            opacity: 0;
+            transform: translateY(25px);
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            backdrop-filter: blur(3px);
+            box-shadow: 
+                0 8px 25px rgba(144, 195, 238, 0.2),
+                0 4px 10px rgba(255, 193, 209, 0.1);
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #a8edea, #fed6e3);
+            border-radius: 5px 0 0 5px;
+        }
+        
+        .message.show-message {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 青春装饰元素 */
+        .decor {
+            position: absolute;
+            z-index: 0;
+        }
+        
+        .decor-1 {
+            top: 20%;
+            left: 10%;
+            width: 40px;
+            height: 40px;
+            background: rgba(144, 195, 238, 0.4);
+            border-radius: 50%;
+            animation: float 4s infinite ease-in-out;
+        }
+        
+        .decor-2 {
+            bottom: 25%;
+            right: 12%;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 193, 209, 0.4);
+            border-radius: 50%;
+            animation: float 5s infinite ease-in-out;
+            animation-delay: 0.5s;
+        }
+        
+        .decor-3 {
+            top: 15%;
+            right: 15%;
+            width: 25px;
+            height: 25px;
+            border: 3px solid rgba(144, 195, 238, 0.4);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+            animation-delay: 1s;
+        }
+        
+        .decor-4 {
+            bottom: 15%;
+            left: 18%;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 193, 209, 0.3);
+            border-radius: 50%;
+            animation: float 5.5s infinite ease-in-out;
+            animation-delay: 1.5s;
+        }
+        
+        /* 花朵装饰 */
+        .flower {
+            position: absolute;
+            font-size: 24px;
+            color: #ff7bac;
+            animation: rotate 10s linear infinite;
+            z-index: 0;
+        }
+        
+        .flower-1 {
+            top: 12%;
+            right: 20%;
+            animation-duration: 15s;
+        }
+        
+        .flower-2 {
+            bottom: 20%;
+            left: 15%;
+            color: #90c3ee;
+            animation-duration: 20s;
+        }
+        
+        /* 动画效果 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 94, 148, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(255, 94, 148, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 94, 148, 0); }
+        }
+        
+        @keyframes starFloat {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+            100% { transform: translateY(-150px) rotate(180deg); opacity: 0; }
+        }
+        
+        .particle {
+            position: absolute;
+            font-size: 18px;
+            color: #ff7bac;
+            animation: starFloat 1.5s ease-out forwards;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 响应式设计 - 手机优化 */
+        @media (max-width: 600px) {
+            .player-card {
+                padding: 25px 20px;
+            }
+            
+            h1 {
+                font-size: 28px;
+                margin: 0 0 30px;
+            }
+            
+            .center-logo {
+                width: 180px;
+                height: 180px;
+                margin-bottom: 30px;
+            }
+            
+            .status {
+                font-size: 20px;
+                padding: 18px;
+                margin: 15px 0 25px;
+            }
+            
+            .message {
+                font-size: 18px;
+                padding: 22px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 26px;
+            }
+            
+            .center-logo {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .status {
+                font-size: 18px;
+            }
+            
+            .message {
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .center-logo {
+                width: 140px;
+                height: 140px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- iOS设备提示层 -->
-    <div id="ios-tips">
-        <h1>请轻点屏幕打开你的毕业祝福</h1>
+    <!-- 青春装饰元素 -->
+    <div class="decor decor-1"></div>
+    <div class="decor decor-2"></div>
+    <div class="decor decor-3"></div>
+    <div class="decor decor-4"></div>
+    
+    <div class="flower flower-1"><i class="fas fa-heart"></i></div>
+    <div class="flower flower-2"><i class="fas fa-star"></i></div>
+    
+    <div class="container">
+        <div class="player-card">
+            <h1>毕业季祝福</h1>
+            
+            <!-- 中央校徽按钮 -->
+            <div class="center-logo" id="playButton">
+                <img src="https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E4%B8%AD%E6%96%87%E6%A0%A1%E5%BE%BD.png" alt="校徽">
+            </div>
+            
+            <div class="status" id="status">轻触校徽获取毕业祝福</div>
+            
+            <div class="message" id="message"></div>
+        </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const playButton = document.getElementById('playButton');
+            const statusEl = document.getElementById('status');
+            const messageEl = document.getElementById('message');
+            let currentAudio = null;
+            
+            // 毕业祝福语
+            const graduationMessages = [
+                "青春不散场，梦想正起航！愿你在未来的日子里光芒万丈，前程似锦！",
+                "愿你有诗，有梦，有坦荡的远方！毕业快乐，未来可期！",
+                "时光静走，终不负青春！愿你带着美好回忆，创造更精彩的未来！",
+                "青春是未完的诗篇，毕业是新的起点！愿你展翅高飞，奔向星辰大海！",
+                "愿你前程似锦，归来仍是少年！莫忘同窗谊，不忘青春梦！",
+                "毕业不是终点，而是新征程的起点！愿你永远保持热爱，奔赴下一场山海！",
+                "愿此去繁花似锦，再相逢依然如故！青春不散场，友谊永珍藏！",
+                "愿你以梦为马，不负韶华；以奋斗为翼，翱翔天际！毕业快乐！",
+                "青葱岁月，有你真好！愿你在未来的日子乘风破浪，勇往直前！",
+                "愿你眼中有星辰大海，胸中有万千丘壑；心之所向，行之所至！"
+            ];
+            
+            // 腾讯云祝福音频文件列表
+            const audioUrls = [
+                "https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_%E9%B4%BB%E5%82%91%40%E5%BE%AE%E4%BF%A1_20250615_2025%E5%B9%B406%E6%9C%8815%E6%97%A5%20%E4%B8%8B%E5%8D%8801%E7%82%B954%E5%88%86_1.m4a",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_%E8%8D%94%E6%9E%9D%40%E5%BE%AE%E4%BF%A1_20250615_%E8%8D%94%E6%9E%9D%E6%AF%95%E4%B8%9A%E7%94%9F%E7%A5%9D%E7%A6%8F_1.m4a",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_%E7%96%AF%E7%8B%82%E7%9A%84%E6%B3%A2%E6%96%AF%E7%8C%AB%40%E5%BE%AE%E4%BF%A1_20250615_%E7%A5%9D%E7%A6%8F%E8%AF%AD_1.m4a",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_%E7%96%AF%E7%8B%82%E7%9A%84%E6%B3%A2%E6%96%AF%E7%8C%AB%40%E5%BE%AE%E4%BF%A1_20250615_%E7%A5%9D%E7%A6%8F%E8%AF%AD_1.m4a",
+
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_%E7%96%AF%E7%8B%82%E7%9A%84%E6%B3%A2%E6%96%AF%E7%8C%AB%40%E5%BE%AE%E4%BF%A1_20250615_%E7%A5%9D%E7%A6%8F%E8%AF%AD_1.m4a",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_%E5%91%86%E5%91%86%E5%85%BD.%40%E5%BE%AE%E4%BF%A1_20250615_%E7%A5%9D%E7%A6%8F_1.mp3",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_To%40%E5%BE%AE%E4%BF%A1_20250615_%E6%A0%87%E5%87%86%E5%BD%95%E9%9F%B3%203_1.mp3",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_7uili%40%E5%BE%AE%E4%BF%A1_20250615_%E6%B4%A5%E6%B2%BD%E5%85%AC%E8%B7%AF_1.m4a",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_1%40%E5%BE%AE%E4%BF%A1_20250615_%E5%A4%A9%E6%B4%A5%E7%8E%B0%E4%BB%A3%E8%81%8C%E4%B8%9A%E6%8A%80%E6%9C%AF%E5%AD%A6%E9%99%A2%E5%AD%A6%E7%94%9F%E5%A4%84_1.m4a",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_-%E6%97%BA%E4%BB%94%E5%B0%8F%E5%A9%B7%F0%9F%92%A6%40%E5%BE%AE%E4%BF%A1_20250615_%E6%A0%87%E5%87%86%E5%BD%95%E9%9F%B3%2040_1.mp3",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E7%AC%AC5%E9%A2%98_-%E6%97%BA%E4%BB%94%E5%B0%8F%E5%A9%B7%F0%9F%92%A6%40%E5%BE%AE%E4%BF%A1_20250615_%E6%A0%87%E5%87%86%E5%BD%95%E9%9F%B3%2040_1.mp3",
+
+
+"https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%E5%90%B4%E7%90%BC.m4a"
+
+            ];
+            
+            // 创建粒子效果
+            function createParticles() {
+                const particles = 24;
+                for (let i = 0; i < particles; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    const x = Math.random() * window.innerWidth;
+                    const fontSize = Math.random() * 24 + 12;
+                    const delay = Math.random() * 1;
+                    
+                    const symbols = ['★', '❤', '✦', '❀', '✿', '✧', '❁', '✺'];
+                    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    
+                    particle.innerHTML = symbol;
+                    particle.style.left = `${x}px`;
+                    particle.style.bottom = `0px`;
+                    particle.style.fontSize = `${fontSize}px`;
+                    particle.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                    particle.style.animationDelay = `${delay}s`;
+                    
+                    document.body.appendChild(particle);
+                    
+                    // 粒子动画结束后移除
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 1500);
+                }
+            }
+            
+            // 设备检测
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            // 播放音频函数
+            function playRandomAudio() {
+                // 停止当前正在播放的音频
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                
+                // 随机选择祝福语
+                const randomIndex = Math.floor(Math.random() * graduationMessages.length);
+                const message = graduationMessages[randomIndex];
+                
+                // 更新状态
+                statusEl.textContent = "正在准备你的祝福...";
+                statusEl.classList.remove('playing');
+                messageEl.classList.remove('show-message');
+                
+                // 添加粒子效果
+                createParticles();
+                
+                // 创建音频对象
+                const audio = new Audio(audioUrls[randomIndex % audioUrls.length]);
+                
+                // iOS特殊处理
+                if (isIOS) {
+                    audio.volume = 1.0;
+                    audio.preload = 'auto';
+                }
+                
+                // 播放音频
+                audio.play().then(() => {
+                    statusEl.textContent = "祝福播放中...";
+                    statusEl.classList.add('playing');
+                    
+                    // 显示祝福语
+                    setTimeout(() => {
+                        messageEl.textContent = message;
+                        messageEl.classList.add('show-message');
+                    }, 800);
+                    
+                    currentAudio = audio;
+                    
+                    audio.addEventListener('ended', () => {
+                        statusEl.textContent = "祝福已送达！毕业快乐！";
+                        statusEl.classList.remove('playing');
+                        currentAudio = null;
+                    });
+                    
+                }).catch(error => {
+                    console.error('播放失败:', error);
+                    statusEl.textContent = "语音祝福加载中，请稍候...";
+                    
+                    // 安卓特殊错误处理
+                    if (isAndroid && error.name === 'NotAllowedError') {
+                        statusEl.textContent = "轻触屏幕继续加载语音";
+                    }
+                    
+                    // 失败时也显示祝福语
+                    setTimeout(() => {
+                        statusEl.textContent = "文字祝福已送达！";
+                        messageEl.textContent = message;
+                        messageEl.classList.add('show-message');
+                    }, 1500);
+                });
+            }
+            
+            // 初始化按钮事件
+            playButton.addEventListener('click', playRandomAudio);
+            
+            // iOS自动播放限制的额外处理
+            if (isIOS) {
+                document.addEventListener('touchstart', function iosSoundInit() {
+                    document.removeEventListener('touchstart', iosSoundInit);
+                    const unlockAudio = new Audio();
+                    unlockAudio.volume = 0;
+                    unlockAudio.play().catch(() => {});
+                });
+            }
+        });
+    </script>
 </body>
 </html>
