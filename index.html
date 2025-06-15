@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>NFC录音播放</title>
+    <script>
+        // 核心代码：加载后自动播放音频
+        window.onload = function() {
+            const audio = new Audio("https://biyejizhufu-1364259797.cos.ap-guangzhou.myqcloud.com/%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%E5%90%B4%E7%90%BC.m4a");
+            // 安卓自动播放
+            audio.play().catch(e => {
+                // iOS需要点击：显示引导层
+                document.getElementById("ios-tips").style.display = "block";
+            });
+
+            // 全屏点击处理（兼容iOS）
+            document.body.onclick = () => {
+                audio.play();
+                document.getElementById("ios-tips").style.display = "none";
+            };
+        };
+    </script>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #ios-tips {
+            display: none; /* 默认隐藏 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            font-family: sans-serif;
+            text-align: center;
+            padding-top: 40%;
+        }
+    </style>
+</head>
+<body>
+    <!-- iOS设备提示层 -->
+    <div id="ios-tips">
+        <h1>请轻点屏幕播放录音</h1>
+        <p>(iPhone需手动触发一次播放)</p>
+    </div>
+</body>
+</html>
